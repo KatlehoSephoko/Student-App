@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusSentry Student Portal</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
+        .panic-btn { width: 200px; height: 200px; background: #cf6679; border-radius: 50%; border: none; color: black; font-weight: bold; font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(207, 102, 121, 0.4); }
+        .panic-btn:active { background: #b05464; }
+        select { padding: 10px; background: #333; color: white; border: 1px solid #555; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>CampusSentry Mobile Portal</h1>
+    <p>Simulate Network Access Point connection:</p>
+    <select id="networkNode">
+        <option value="ap-001-sci-floor2">Science Bldg - Floor 2 (AP-001)</option>
+        <option value="ap-002-lib-basement">Central Library - Basement (AP-002)</option>
+        <option value="ap-003-quad-north">North Quad - Open Pathway (AP-003)</option>
+    </select>
+    <br><br>
+    <button class="panic-btn" onclick="sendEmergencySignal()">TRIGGER PANIC</button>
+
+    <script>
+        const socket = io();
+        
+        // Register this client context as a mobile end-user
+        socket.emit('register-session', 'student-portal');
+
+        function sendEmergencySignal() {
+            const selectedNetwork = document.getElementById('networkNode').value;
+            
+            const payload = {
+                studentName: "Jane Doe (Courier ID: 402)",
+                simulatedNetworkId: selectedNetwork,
+                coords: { lat: 40.7128, lng: -74.0060 } // Mock GPS payload data
+            };
+            
+            socket.emit('trigger-panic', payload);
+            alert("Emergency broadcast transmitted to Campus Dispatch!");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusSentry Dispatch Console</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #e2e8f0; padding: 30px; }
+        #alertLog { background: #1e293b; border-left: 5px solid #ef4444; padding: 15px; margin-top: 20px; display: none; }
+        .critical { color: #f87171; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>CampusSentry Security Operations Console</h1>
+    <h3>Status: Live Telemetry Feed Active</h3>
+    <hr style="border-color: #334155;">
+    
+    <div id="noAlerts">No active alerts currently reported across campus grid.</div>
+    <div id="alertLog">
+        <h2>⚠️ CRITICAL ALERT INGESTED</h2>
+        <p><strong>Incident Reference:</strong> <span id="incId" class="critical"></span></p>
+        <p><strong>Target Identity:</strong> <span id="user"></span></p>
+        <p><strong>Resolved WLAN Infrastructure Location:</strong></p>
+        <ul>
+            <li>Building Context: <span id="bld"></span></li>
+            <li>Zone Segment: <span id="flr"></span> (<span id="wng"></span>)</li>
+            <li>Infrastructure Environmental Rating: <span id="rte"></span></li>
+        </ul>
+        <p><strong>Telemetry Timestamp:</strong> <span id="time"></span></p>
+    </div>
+
+    <script>
+        const socket = io();
+
+        // Register this client context as the enterprise command console dashboard
+        socket.emit('register-session', 'security-console');
+
+        socket.on('inbound-alert', (data) => {
+            document.getElementById('noAlerts').style.display = 'none';
+            document.getElementById('alertLog').style.display = 'block';
+            
+            // Populate telemetry details dynamically via DOM
+            document.getElementById('incId').innerText = data.incidentId;
+            document.getElementById('user').innerText = data.studentName;
+            document.getElementById('bld').innerText = data.networkLocation.building;
+            document.getElementById('flr').innerText = data.networkLocation.floor;
+            document.getElementById('wng').innerText = data.networkLocation.wing;
+            document.getElementById('rte').innerText = data.networkLocation.safetyRating;
+            document.getElementById('time').innerText = data.timestamp;
+        });
+    </script>
+</body>
+</html>
