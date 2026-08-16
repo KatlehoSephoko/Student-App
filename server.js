@@ -1,3 +1,14 @@
+// 1. Polyfills for iSH Alpine Node compatibility
+if (!Object.hasOwn) {
+    Object.hasOwn = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
+}
+if (!String.prototype.replaceAll) {
+    String.prototype.replaceAll = function(str, newStr) {
+        return this.replace(new RegExp(str.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&'), 'g'), newStr);
+    };
+}
+
+// 2. Fixed casing: 'const' instead of 'Const'
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -14,8 +25,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 /**
  * MOCK DATABASE MATRIX
- * Simulates a campus WLAN infrastructure matching raw Network Access Point IDs 
- * (BSSIDs or localized subnet IPs) to human-readable physical locations.
+ * Simulates campus WLAN infrastructure matching raw Access Point IDs 
+ * to human-readable physical locations.
  */
 const MOCK_WLAN_MATRIX = {
     'ap-001-sci-floor2': { building: 'Science Block', floor: '2nd Floor', wing: 'East Wing', safetyRating: 'Safe Corridor' },
@@ -27,24 +38,16 @@ const MOCK_WLAN_MATRIX = {
 io.on('connection', (socket) => {
     console.log(`[Network Link Established]: Connected ID -> ${socket.id}`);
 
-    /**
-     * Event: Register Session Identification
-     * Places the socket into a specific communication room depending on their tier.
-     */
+    // Register Session into Room
     socket.on('register-session', (role) => {
         socket.join(role);
         console.log(`[Session Registered]: Socket ${socket.id} assigned to role: ${role}`);
     });
 
-    /**
-     * Event: Inbound Panic Trigger
-     * Receives emergency data from the student mobile client, enriches it with 
-     * network-level telemetry, and blasts it to the Security Operations room.
-     */
+    // Inbound Panic Trigger
     socket.on('trigger-panic', (payload) => {
         console.log(`\n[CRITICAL WARNING]: Panic received from client ${socket.id}`);
         
-        // Network Layer Simulation: Resolving the location via the WLAN Matrix
         const rawNetworkId = payload.simulatedNetworkId;
         const resolvedLocation = MOCK_WLAN_MATRIX[rawNetworkId] || {
             building: 'Unknown Campus Zone',
@@ -53,7 +56,6 @@ io.on('connection', (socket) => {
             safetyRating: 'Unverified'
         };
 
-        // Enriching payload with server-side network resolution and timestamp
         const enrichedAlert = {
             studentName: payload.studentName || 'Anonymous Student',
             gpsCoordinates: payload.coords,
@@ -62,9 +64,9 @@ io.on('connection', (socket) => {
             incidentId: `INC-${Math.floor(1000 + Math.random() * 9000)}`
         };
 
-        console.log(`[WLAN Router Resolved Location]: ${resolvedLocation.building} - ${resolvedLocation.floor}`);
+        console.log(`[WLAN Resolved]: ${resolvedLocation.building} - ${resolvedLocation.floor}`);
         
-        // Dispatch alert immediately to the enterprise security dashboard group using zero-lag WebSockets
+        // Broadcast directly to security dashboard listeners
         io.to('security-console').emit('inbound-alert', enrichedAlert);
     });
 
@@ -73,8 +75,8 @@ io.on('connection', (socket) => {
     });
 });
 
-// Run Enterprise Server Sandbox
-server.listen(PORT, () => {
+// Explicitly bind to '0.0.0.0' for LAN access across your devices
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
     console.log(` CampusSentry Secure Engine Running on Port: ${PORT}`);
     console.log(` Local Sandbox Access URI: http://localhost:${PORT}`);
