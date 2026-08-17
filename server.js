@@ -1,5 +1,5 @@
 // ==========================================
-// 1. RUNTIME POLYFILLS (Node/iSH compatibility)
+// 1. RUNTIME POLYFILLS
 // ==========================================
 if (!Object.hasOwn) {
     Object.hasOwn = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
@@ -11,7 +11,7 @@ if (!String.prototype.replaceAll) {
 }
 
 // ==========================================
-// 2. CORE SERVER DEPENDENCIES
+// 2. DEPENDENCIES & SETUP
 // ==========================================
 const express = require('express');
 const http = require('http');
@@ -24,10 +24,8 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-// Serve static assets from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Root route redirect to the Student Portal
 app.get('/', (req, res) => {
     res.redirect('/student.html');
 });
@@ -56,30 +54,20 @@ const MOCK_WLAN_MATRIX = {
     }
 };
 
-// Global state cache for mobile tab reliability
 let latestAlert = null;
 
 // ==========================================
 // 4. WEBSOCKET EVENT PIPELINE
 // ==========================================
 io.on('connection', (socket) => {
-    console.log(`[Network Link Established]: Connected ID -> ${socket.id}`);
-
-    // Register Session into specific rooms
     socket.on('register-session', (role) => {
         socket.join(role);
-        console.log(`[Session Registered]: Socket ${socket.id} assigned to role: ${role}`);
-
-        // If a security console connects after an alert was triggered, deliver cached alert
         if (role === 'security-console' && latestAlert) {
             socket.emit('inbound-alert', latestAlert);
         }
     });
 
-    // Inbound Panic Trigger Handler
     socket.on('trigger-panic', (payload) => {
-        console.log(`\n[CRITICAL WARNING]: Panic received from client ${socket.id}`);
-        
         const rawNetworkId = payload.simulatedNetworkId;
         const resolvedLocation = MOCK_WLAN_MATRIX[rawNetworkId] || {
             building: 'Unknown Campus Zone',
@@ -88,34 +76,23 @@ io.on('connection', (socket) => {
             safetyRating: 'Unverified'
         };
 
+        const profile = payload.studentProfile || {};
+
         const enrichedAlert = {
-            studentName: payload.studentName || 'Anonymous Student',
+            studentNumber: profile.studentNumber || 'N/A',
+            fullName: `${profile.firstName || 'Anonymous'} ${profile.surname || ''}`.trim(),
+            phone: profile.phone || 'N/A',
             gpsCoordinates: payload.coords,
             networkLocation: resolvedLocation,
             timestamp: new Date().toISOString(),
             incidentId: `INC-${Math.floor(1000 + Math.random() * 9000)}`
         };
 
-        console.log(`[WLAN Resolved Location]: ${resolvedLocation.building} - ${resolvedLocation.floor}`);
-        
-        // Cache the latest alert
         latestAlert = enrichedAlert;
-
-        // Broadcast directly to security dashboard listeners
         io.to('security-console').emit('inbound-alert', enrichedAlert);
-    });
-
-    socket.on('disconnect', () => {
-        console.log(`[Network Link Dropped]: Disconnected ID -> ${socket.id}`);
     });
 });
 
-// ==========================================
-// 5. SERVER BOOT
-// ==========================================
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`====================================================`);
-    console.log(` CampusSentry Engine Running on Port: ${PORT}`);
-    console.log(` Local Access URI: http://localhost:${PORT}`);
-    console.log(`====================================================`);
+    console.log(`Server running on Port ${PORT}`);
 });
