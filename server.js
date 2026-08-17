@@ -75,6 +75,10 @@ io.on('connection', (socket) => {
     });
 });
 
+app.get('/', (req, res) => {
+    res.redirect('/student.html');
+});
+
 // Explicitly bind to '0.0.0.0' for LAN access across your devices
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
