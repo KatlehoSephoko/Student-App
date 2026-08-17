@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusSentry | Emergency Portal</title>
+    <title>CampusSentry | Student Safety Portal</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,13 +44,12 @@
 
         .container {
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.25rem;
         }
 
-        /* Top Nav Link */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -68,7 +67,6 @@
             font-weight: 600;
             padding: 0.35rem 0.75rem;
             border-radius: 9999px;
-            letter-spacing: 0.02em;
         }
 
         .status-dot {
@@ -77,7 +75,6 @@
             background: var(--accent-green);
             border-radius: 50%;
             box-shadow: 0 0 8px var(--accent-green);
-            animation: pulse-green 2s infinite;
         }
 
         .nav-link {
@@ -85,119 +82,67 @@
             text-decoration: none;
             font-size: 0.8rem;
             font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            transition: color 0.2s ease;
         }
 
         .nav-link:hover {
             color: var(--accent-blue);
         }
 
-        /* Header Card */
         .header-card {
             text-align: center;
         }
 
         .header-card h1 {
-            font-size: 1.65rem;
+            font-size: 1.6rem;
             font-weight: 800;
             letter-spacing: -0.03em;
             background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 0.35rem;
         }
 
         .header-card p {
             color: var(--text-secondary);
-            font-size: 0.875rem;
-            line-height: 1.4;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
         }
 
-        /* Panic Button */
-        .panic-wrapper {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1.5rem 0;
-        }
-
-        .pulse-ring {
-            position: absolute;
-            width: 210px;
-            height: 210px;
-            border-radius: 50%;
-            background: var(--accent-red-glow);
-            animation: ripple 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-            z-index: 1;
-        }
-
-        .panic-btn {
-            position: relative;
-            z-index: 2;
-            width: 190px;
-            height: 190px;
-            border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
-            color: #ffffff;
-            cursor: pointer;
-            box-shadow: 
-                0 0 0 8px rgba(239, 68, 68, 0.15),
-                0 20px 35px -10px rgba(239, 68, 68, 0.6),
-                inset 0 2px 4px rgba(255, 255, 255, 0.4),
-                inset 0 -4px 8px rgba(0, 0, 0, 0.4);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 0.4rem;
-            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
-        }
-
-        .panic-btn:active {
-            transform: scale(0.94);
-            box-shadow: 
-                0 0 0 4px rgba(239, 68, 68, 0.2),
-                0 10px 20px -5px rgba(239, 68, 68, 0.7);
-        }
-
-        .panic-btn .icon {
-            font-size: 2.2rem;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-
-        .panic-btn .btn-text {
-            font-size: 1.05rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .panic-btn .sub-text {
-            font-size: 0.65rem;
-            font-weight: 600;
-            opacity: 0.85;
-            letter-spacing: 0.04em;
-        }
-
-        /* Controls Card */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 1.25rem;
             padding: 1.25rem;
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
         }
 
-        .field-group {
+        .user-pill {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            color: var(--accent-blue);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .form-full {
+            grid-column: span 2;
         }
 
         .field-label {
@@ -206,46 +151,79 @@
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
+            margin-bottom: 0.35rem;
+            display: block;
         }
 
-        .select-wrapper {
-            position: relative;
-        }
-
-        select {
+        input, select {
             width: 100%;
             background: rgba(15, 23, 42, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.12);
             color: var(--text-primary);
-            padding: 0.85rem 1rem;
-            border-radius: 0.75rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            appearance: none;
+            padding: 0.75rem 0.85rem;
+            border-radius: 0.65rem;
+            font-size: 0.85rem;
             outline: none;
-            cursor: pointer;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        select:focus {
+        input:focus, select:focus {
             border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
-        .select-chevron {
+        .btn-secondary {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.75rem;
+        }
+
+        .panic-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .pulse-ring {
             position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: var(--text-secondary);
-            font-size: 0.75rem;
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            background: var(--accent-red-glow);
+            animation: ripple 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
         }
 
-        /* Toast Confirmation Notification */
+        .panic-btn {
+            position: relative;
+            z-index: 2;
+            width: 175px;
+            height: 175px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.15), 0 20px 35px -10px rgba(239, 68, 68, 0.6);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .panic-btn:active {
+            transform: scale(0.95);
+        }
+
+        .panic-btn .icon { font-size: 2rem; }
+        .panic-btn .btn-text { font-size: 1rem; font-weight: 800; letter-spacing: 0.05em; }
+
         .toast {
             position: fixed;
             bottom: -80px;
@@ -253,126 +231,167 @@
             transform: translateX(-50%);
             background: #1e293b;
             border: 1px solid rgba(239, 68, 68, 0.4);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             padding: 0.85rem 1.25rem;
             border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
             font-size: 0.85rem;
-            font-weight: 600;
             color: #fff;
-            z-index: 999;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), bottom 0.3s ease;
+            transition: bottom 0.3s ease;
             white-space: nowrap;
+            z-index: 99;
         }
 
-        .toast.visible {
-            bottom: 2rem;
-        }
+        .toast.visible { bottom: 2rem; }
 
-        /* Keyframe Animations */
         @keyframes ripple {
-            0% {
-                transform: scale(0.9);
-                opacity: 0.8;
-            }
-            50% {
-                transform: scale(1.35);
-                opacity: 0.2;
-            }
-            100% {
-                transform: scale(1.6);
-                opacity: 0;
-            }
-        }
-
-        @keyframes pulse-green {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+            0% { transform: scale(0.9); opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Top Bar -->
         <div class="top-nav">
             <div class="status-badge">
-                <span class="status-dot"></span>
-                Mesh Connected
+                <span class="status-dot"></span> Mesh Ready
             </div>
-            <a href="/security.html" class="nav-link">
-                Console View &rarr;
-            </a>
+            <a href="/security.html" class="nav-link">Security Console &rarr;</a>
         </div>
 
-        <!-- Title -->
         <div class="header-card">
             <h1>CampusSentry</h1>
-            <p>Immediate WLAN-assisted emergency dispatch</p>
+            <p>Immediate Identity & WLAN Emergency Dispatch</p>
         </div>
 
-        <!-- Big Interactive Emergency Trigger -->
-        <div class="panic-wrapper">
-            <div class="pulse-ring"></div>
-            <button class="panic-btn" id="panicButton" onclick="sendEmergencySignal()">
-                <span class="icon">🚨</span>
-                <span class="btn-text">PANIC</span>
-                <span class="sub-text">TAP TO BROADCAST</span>
-            </button>
-        </div>
-
-        <!-- Contextual Controls Card -->
-        <div class="card">
-            <div class="field-group">
-                <label class="field-label" for="networkNode">
-                    <span>📍</span> Simulated Access Point
-                </label>
-                <div class="select-wrapper">
-                    <select id="networkNode">
-                        <option value="ap-001-sci-floor2">Science Block — Floor 2 (AP-001)</option>
-                        <option value="ap-002-lib-basement">Central Library — Basement (AP-002)</option>
-                        <option value="ap-003-quad-north">North Quad — Pathway Alpha (AP-003)</option>
-                    </select>
-                    <span class="select-chevron">▼</span>
+        <!-- Student Profile Box -->
+        <div class="card" id="profileView" style="display:none;">
+            <div class="user-pill">
+                <div>
+                    <strong id="displayStudentName">Jane Doe</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.75rem;" id="displayStudentMeta">ID: 2024001 • 0712345678</div>
                 </div>
+                <button class="edit-btn" onclick="toggleEditProfile(true)">Edit</button>
             </div>
         </div>
+
+        <!-- Student Registration Form -->
+        <div class="card" id="profileFormCard">
+            <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.85rem;">📝 Student Profile Registration</div>
+            <form id="registrationForm" onsubmit="saveProfile(event)">
+                <div class="form-grid">
+                    <div class="form-full">
+                        <label class="field-label">Student Number</label>
+                        <input type="text" id="regStudentNumber" placeholder="e.g. 22003418" required />
+                    </div>
+                    <div>
+                        <label class="field-label">First Name</label>
+                        <input type="text" id="regFirstName" placeholder="e.g. John" required />
+                    </div>
+                    <div>
+                        <label class="field-label">Surname</label>
+                        <input type="text" id="regSurname" placeholder="e.g. Doe" required />
+                    </div>
+                    <div class="form-full">
+                        <label class="field-label">Phone Number</label>
+                        <input type="tel" id="regPhone" placeholder="e.g. 082 123 4567" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn-secondary">Save Identity Profile</button>
+            </form>
+        </div>
+
+        <!-- Simulated WLAN Access Point Selector -->
+        <div class="card">
+            <label class="field-label">📍 Network AP Location</label>
+            <select id="networkNode">
+                <option value="ap-001-sci-floor2">Science Block — Floor 2 (AP-001)</option>
+                <option value="ap-002-lib-basement">Central Library — Basement (AP-002)</option>
+                <option value="ap-003-quad-north">North Quad — Pathway Alpha (AP-003)</option>
+            </select>
+        </div>
+
+        <!-- Panic Button -->
+        <div class="panic-wrapper">
+            <div class="pulse-ring"></div>
+            <button class="panic-btn" onclick="sendEmergencySignal()">
+                <span class="icon">🚨</span>
+                <span class="btn-text">PANIC</span>
+            </button>
+        </div>
     </div>
 
-    <!-- Feedback Toast -->
-    <div id="toastNotification" class="toast">
-        <span>⚠️</span> Distress Telemetry Transmitted to Dispatch!
-    </div>
+    <div id="toastNotification" class="toast">⚠️ Emergency Alert Broadcasted with Student Details!</div>
 
     <script>
         const socket = io();
         socket.emit('register-session', 'student-portal');
 
-        function sendEmergencySignal() {
-            const selectedNetwork = document.getElementById('networkNode').value;
-            const btn = document.getElementById('panicButton');
+        let studentProfile = null;
 
-            // Haptic vibration feedback for supported mobile devices
+        // Load profile from localStorage on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('campussentry_student_profile');
+            if (saved) {
+                studentProfile = JSON.parse(saved);
+                updateProfileUI();
+            }
+        });
+
+        function saveProfile(e) {
+            e.preventDefault();
+            studentProfile = {
+                studentNumber: document.getElementById('regStudentNumber').value.trim(),
+                firstName: document.getElementById('regFirstName').value.trim(),
+                surname: document.getElementById('regSurname').value.trim(),
+                phone: document.getElementById('regPhone').value.trim()
+            };
+            localStorage.setItem('campussentry_student_profile', JSON.stringify(studentProfile));
+            updateProfileUI();
+        }
+
+        function updateProfileUI() {
+            if (!studentProfile) return;
+            document.getElementById('displayStudentName').innerText = `${studentProfile.firstName} ${studentProfile.surname}`;
+            document.getElementById('displayStudentMeta').innerText = `ID: ${studentProfile.studentNumber} • 📞 ${studentProfile.phone}`;
+            document.getElementById('profileView').style.display = 'block';
+            document.getElementById('profileFormCard').style.display = 'none';
+        }
+
+        function toggleEditProfile(showForm) {
+            if (showForm && studentProfile) {
+                document.getElementById('regStudentNumber').value = studentProfile.studentNumber;
+                document.getElementById('regFirstName').value = studentProfile.firstName;
+                document.getElementById('regSurname').value = studentProfile.surname;
+                document.getElementById('regPhone').value = studentProfile.phone;
+            }
+            document.getElementById('profileFormCard').style.display = showForm ? 'block' : 'none';
+            document.getElementById('profileView').style.display = showForm ? 'none' : 'block';
+        }
+
+        function sendEmergencySignal() {
+            if (!studentProfile) {
+                alert('Please fill in and save your Student Profile first before triggering an alert!');
+                toggleEditProfile(true);
+                return;
+            }
+
+            const selectedNetwork = document.getElementById('networkNode').value;
+
             if (navigator.vibrate) {
                 navigator.vibrate([100, 50, 200]);
             }
 
             const payload = {
-                studentName: "Jane Doe (Courier ID: 402)",
+                studentProfile: studentProfile,
                 simulatedNetworkId: selectedNetwork,
                 coords: { lat: 40.7128, lng: -74.0060 }
             };
 
             socket.emit('trigger-panic', payload);
 
-            // Trigger visual confirmation toast
             const toast = document.getElementById('toastNotification');
             toast.classList.add('visible');
-            setTimeout(() => {
-                toast.classList.remove('visible');
-            }, 3500);
+            setTimeout(() => toast.classList.remove('visible'), 3500);
         }
     </script>
 </body>
