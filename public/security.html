@@ -3,50 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusSentry Dispatch Console</title>
+    <title>CampusSentry | Security Operations Console</title>
     <script src="/socket.io/socket.io.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: #e2e8f0; padding: 30px; }
-        #alertLog { background: #1e293b; border-left: 5px solid #ef4444; padding: 15px; margin-top: 20px; display: none; }
-        .critical { color: #f87171; font-weight: bold; }
+        :root {
+            --bg-base: #06090e;
+            --panel-bg: rgba(15, 23, 42, 0.65);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --accent-red: #ef4444;
+            --accent-red-glow: rgba(239, 68, 68, 0.25);
+            --accent-amber: #f59e0b;
+            --accent-blue: #38bdf8;
+            --accent-emerald: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.07) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(239, 68, 68, 0.05) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1.25rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Header & Navigation */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-title h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 0.6rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-blue);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        /* Status Banner */
+        .status-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1.25rem;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 0.75rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .telemetry-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-emerald);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-emerald);
+            animation: radar-pulse 2s infinite;
+        }
+
+        .timestamp-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Idle State Panel */
+        #noAlerts {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 1.5rem;
+            background: var(--panel-bg);
+            border: 1px dashed var(--panel-border);
+            border-radius: 1rem;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        #noAlerts .idle-icon {
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        #noAlerts p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Critical Ingest Alert Panel */
+        #alertLog {
+            display: none;
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 35px var(--accent-red-glow);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--accent-red);
+            color: #fff;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .incident-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.12);
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.375rem;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Grid Data Layout */
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--panel-border);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .metric-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .metric-value.highlight {
+            color: var(--accent-amber);
+        }
+
+        .metric-footer {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @keyframes radar-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.85); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
-    <p><a href="/student.html" style="color: #60a5fa;">Go to Student Portal &rarr;</a></p>
-    <h1>CampusSentry Security Operations Console</h1>
-    <h3>Status: Live Telemetry Feed Active</h3>
-    <hr style="border-color: #334155;">
-    
-    <div id="noAlerts">No active alerts currently reported across campus grid.</div>
-    <div id="alertLog">
-        <h2>⚠️ CRITICAL ALERT INGESTED</h2>
-        <p><strong>Incident Reference:</strong> <span id="incId" class="critical"></span></p>
-        <p><strong>Target Identity:</strong> <span id="user"></span></p>
-        <p><strong>Resolved WLAN Infrastructure Location:</strong></p>
-        <ul>
-            <li>Building Context: <span id="bld"></span></li>
-            <li>Zone Segment: <span id="flr"></span> (<span id="wng"></span>)</li>
-            <li>Infrastructure Environmental Rating: <span id="rte"></span></li>
-        </ul>
-        <p><strong>Telemetry Timestamp:</strong> <span id="time"></span></p>
+
+    <div class="dashboard">
+        <!-- Top Navigation -->
+        <div class="top-bar">
+            <div class="brand-title">
+                <h1>CampusSentry SOC</h1>
+            </div>
+            <a href="/student.html" class="nav-link">
+                &larr; Student Portal
+            </a>
+        </div>
+
+        <!-- Telemetry Status Ribbon -->
+        <div class="status-strip">
+            <div class="telemetry-status">
+                <span class="pulse-dot"></span>
+                Live WLAN Telemetry Feed Active
+            </div>
+            <div class="timestamp-meta" id="clock">00:00:00 UTC</div>
+        </div>
+
+        <!-- Idle Status Box -->
+        <div id="noAlerts">
+            <span class="idle-icon">🛡️</span>
+            <p>Campus grid monitored. No active distress telemetry reported.</p>
+        </div>
+
+        <!-- Populated Alert Panel -->
+        <div id="alertLog">
+            <div class="alert-header">
+                <div class="alert-badge">⚠️ Critical Ingestion</div>
+                <div class="incident-code" id="incId">INC-0000</div>
+            </div>
+
+            <div class="telemetry-grid">
+                <div class="metric-card">
+                    <span class="metric-label">Subject Identity</span>
+                    <span class="metric-value" id="user">—</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Resolved Facility</span>
+                    <span class="metric-value highlight" id="bld">—</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Floor / Sub-Zone</span>
+                    <span class="metric-value" id="flrZone">—</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Environmental Rating</span>
+                    <span class="metric-value" id="rte">—</span>
+                </div>
+            </div>
+
+            <div class="metric-footer">
+                <span>TIMESTAMP LOGGED</span>
+                <span id="time">—</span>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Real-time clock for SOC dashboard
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toUTCString().split(' ')[4] + ' UTC';
+        }, 1000);
+
         const socket = io();
 
-        // Register this client context as the enterprise command console dashboard
+        // Register session directly as security console
         socket.emit('register-session', 'security-console');
 
         socket.on('inbound-alert', (data) => {
             document.getElementById('noAlerts').style.display = 'none';
             document.getElementById('alertLog').style.display = 'block';
-            
-            // Populate telemetry details dynamically via DOM
+
+            // Populate dashboard metrics
             document.getElementById('incId').innerText = data.incidentId;
             document.getElementById('user').innerText = data.studentName;
             document.getElementById('bld').innerText = data.networkLocation.building;
-            document.getElementById('flr').innerText = data.networkLocation.floor;
-            document.getElementById('wng').innerText = data.networkLocation.wing;
+            document.getElementById('flrZone').innerText = `${data.networkLocation.floor} (${data.networkLocation.wing || 'Alpha'})`;
             document.getElementById('rte').innerText = data.networkLocation.safetyRating;
             document.getElementById('time').innerText = data.timestamp;
         });
